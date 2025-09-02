@@ -4,8 +4,6 @@
   <img src="img/temu.png" alt="TEMU Logo" width="200" height="auto">
 </div>
 
-> **TEMU Flight Computer** - An affordable, educational avionics system designed to teach undergraduates the fundamentals of flight computer hardware and software design.
-
 <div align="center">
   <img src="img/image.png" alt="TEMU Flight Computer Setup" style="border: 3px solid black; border-radius: 8px;">
 </div>

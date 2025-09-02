@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <FastIMU.h>
-#include <AT24C256.h>
 #include <BMP280.h>
+#include <Sparkfun_External_EEPROM.h>
 
 // IMU Setup ------------------------------------------------------------
 
@@ -17,6 +17,15 @@ GyroData gyroData; // gyro data storage
 // BMP Setup ------------------------------------------------------------
 
 BMP280 bmp280(0x76);
+
+// EEPROM Setup ------------------------------------------------------------
+
+ExternalEEPROM eepromChip;
+
+
+
+
+// Entry Point ------------------------------------------------------------
 
 void setup() {
 
@@ -61,6 +70,10 @@ void setup() {
 
     pinMode(12, OUTPUT);
 
+    // INITIALIZE EEPROM ------------------------------------------------------------
+
+    eepromChip.setMemoryType(256);
+
     // SETUP IS DONE!!!! NOW FOR THE VALIDATION!!!
 
     Serial.print("\n\n\n");
@@ -94,6 +107,8 @@ void setup() {
 
     Serial.println("--- I2C SCAN ---");
     Serial.println();
+    Serial.println("Nominal I2C Addresses: 0x50, 0x68, 0x76.");
+    Serial.println();
 
     byte error, address;
     int nDevices;
@@ -115,7 +130,7 @@ void setup() {
         if (address<16)
           Serial.print("0");
         Serial.print(address,HEX);
-        Serial.println("  !");
+        Serial.println();
   
         nDevices++;
       }
@@ -130,7 +145,7 @@ void setup() {
     if (nDevices == 0)
       Serial.println("No I2C devices found\n");
     else
-      Serial.println("done\n");
+      Serial.println("I2C Scan Done!!\n");
     
     delay(1000);
     Serial.print("\n\n\n");
@@ -190,10 +205,63 @@ void setup() {
     delay(1000);
     Serial.print("\n\n\n");
 
+    // EEPROM TEST ------------------------------------------------------------
+
+    Serial.println("--- EEPROM TEST ---");
+    Serial.println();
+
+    if (eepromChip.begin() == false)
+    {
+      Serial.println("No memory detected. Freezing.");
+      while (true)
+        ;
+    }
+
+    Serial.println("Memory detected!");
+
+    Serial.print("Mem size in bytes: ");
+    Serial.println(eepromChip.length());
+
+    //Yes you can read and write bytes, but you shouldn't!
+    byte myValue1 = 200;
+    eepromChip.write(0, myValue1); //(location, data)
+
+    byte myRead1 = eepromChip.read(0);
+    Serial.print("I read (should be 200): ");
+    Serial.println(myRead1);
+
+    //You should use gets and puts. This will automatically and correctly arrange
+    //the bytes for larger variable types.
+    int myValue2 = -366;
+    eepromChip.put(10, myValue2); //(location, data)
+    int myRead2;
+    eepromChip.get(10, myRead2); //location to read, thing to put data into
+    Serial.print("I read (should be -366): ");
+    Serial.println(myRead2);
+
+    float myValue3 = -7.35;
+    eepromChip.put(20, myValue3); //(location, data)
+    float myRead3;
+    eepromChip.get(20, myRead3); //location to read, thing to put data into
+    Serial.print("I read (should be -7.35): ");
+    Serial.println(myRead3);
+
+    String myString = "Hi, I am just a simple test string";
+    unsigned long nextEEPROMLocation = eepromChip.putString(30, myString);
+    String myRead4 = "";
+    eepromChip.getString(30, myRead4);
+    Serial.print("I read: ");
+    Serial.println(myRead4);
+    Serial.print("Next available EEPROM location: ");
+    Serial.println(nextEEPROMLocation);
+    
+    delay(1000);
+    Serial.print("\n\n\n");
+
     // END OF VALIDATION ------------------------------------------------------------
     Serial.println("End of validation!!!");
 }
 
 void loop() {
-
+  // do nothing here lol
 }
